@@ -1,0 +1,23 @@
+#pragma once
+#include <windows.h>
+
+#include "errors.h"
+#include "temp_object_t.h"
+#include "window_rect_t.h"
+
+namespace dejlib2 {
+
+struct clipper_t
+{
+	HDC hdc;
+	
+	clipper_t(HDC hdc);
+
+	void clear();
+	void fill();
+	void merge(int x, int y, int w, int h);
+	void cut(int x, int y, int w, int h);
+	void crop(int x, int y, int w, int h);
+};
+
+} // namespace dejlib2
