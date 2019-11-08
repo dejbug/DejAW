@@ -17,7 +17,7 @@ grid_t grid;
 BOOL wm_create(HWND h, LPCREATESTRUCT cs)
 {
 	//~ DragAcceptFiles(h, TRUE);
-	grid.setup({0, 0, 480, 120}, 12, 3);
+	grid.setCellSize(32, 32);
 	return TRUE;
 }
 
@@ -29,7 +29,7 @@ void wm_timer(HWND h, UINT id)
 {
 }
 
-void wm_size(HWND h, UINT type, short width, short height)
+void wm_size(HWND h, UINT type, short cx, short cy)
 {
 }
 
