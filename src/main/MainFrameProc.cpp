@@ -3,21 +3,19 @@
 #include <shellapi.h>
 #include <stdio.h>
 
-#include <dejlib2/error_t.h>
-#include <dejlib2/win.h>
-#include <dejlib3/win.h>
-#include <dejlib3/dbg.h>
+#include <pool/dejlib2/error_t.h>
+#include <pool/dejlib2/win.h>
+#include <pool/dejlib3/win.h>
 
 #include <main/resource.h>
-#include <main/grid_t.h>
+#include <app/PianoRoll.h>
 
-grid_t grid;
-
+PianoRoll pianoRoll;
 
 BOOL wm_create(HWND h, LPCREATESTRUCT cs)
 {
 	//~ DragAcceptFiles(h, TRUE);
-	grid.setCellSize(32, 32);
+	//~ pianoRoll.cellSize = { 16, 16 };
 	return TRUE;
 }
 
@@ -39,11 +37,11 @@ void wm_paint(HWND h)
 	//~ COLORREF const f = RGB(0x83,0x8B,0x8B);
 	//~ COLORREF const t = RGB(0x3f,0x3f,0xaf);
 
-	dejlib3::win::PaintDc dc(h, b, b);
-
 	RECT r;
 	GetClientRect(h, &r);
-	grid.paint(dc, r);
+
+	dejlib3::win::PaintDc dc(h, b, b);
+	pianoRoll.paint(dc.handle, r);
 }
 
 void wm_keydown(HWND h, UINT key, BOOL, int repeatCount, UINT flags)

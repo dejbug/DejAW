@@ -1,4 +1,4 @@
-#include <dejlib3/win.h>
+#include "win.h"
 #include <stdio.h>
 
 namespace dejlib3 {

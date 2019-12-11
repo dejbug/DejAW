@@ -1,9 +1,9 @@
 #include <windows.h>
 
-#include <dejlib3/win.h>
-#include <dejlib2/window_class_t.h>
-#include <dejlib2/window_maker_t.h>
-#include <dejlib2/window_positioner_t.h>
+#include <pool/dejlib3/win.h>
+#include <pool/dejlib2/window_class_t.h>
+#include <pool/dejlib2/window_maker_t.h>
+#include <pool/dejlib2/window_positioner_t.h>
 
 extern LRESULT CALLBACK MainFrameProc(HWND, UINT, WPARAM, LPARAM);
 

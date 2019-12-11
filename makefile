@@ -11,7 +11,9 @@ INCDIRS := src
 SYMBOLS := WIN32_LEAN_AND_MEAN STRICT
 WINLIBS := gdi32
 
-CXXFLAGS := --std=c++11 -fabi-version=11 -Wall -Wpedantic
+CXXFLAGS := --std=c++17 -Wall -Wextra -pedantic-errors
+CXXFLAGS += -fmax-errors=1
+CXXFLAGS += -fdiagnostics-color=always
 CXXFLAGS +=	$(addprefix -I,$(INCDIRS))
 CXXFLAGS +=	$(addprefix -D,$(SYMBOLS))
 
@@ -37,8 +39,8 @@ PREREQS := $(SOURCES:src/%.cpp=build/%.d)
 OBJECTS := $(SOURCES:src/%.cpp=build/%.o)
 SUBDIRS := $(call DISTINCT,$(dir $(OBJECTS)))
 
-$(info SOURCES $(SOURCES))
-$(info SUBDIRS $(SUBDIRS))
+# $(info SOURCES $(SOURCES))
+# $(info SUBDIRS $(SUBDIRS))
 
 deploy/$(NAME).exe : build/resource.o
 deploy/$(NAME).exe : $(OBJECTS) | deploy/ ; $(call LINK,$@,$^)
