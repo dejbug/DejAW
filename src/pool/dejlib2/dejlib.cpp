@@ -44,10 +44,10 @@ void clipper_t::clipper_t::fill()
 {
 	HWND h = WindowFromDC(hdc);
 	window_rect_t r(h);
-	
+
 	temp_object_t reg(
 		CreateRectRgn(r.l, r.t, r.r, r.b));
-	
+
 	SelectClipRgn(hdc, (HRGN)reg.handle);
 }
 
@@ -154,7 +154,7 @@ COLORREF hsv(float h, float s, float v)
 			b = q;
 			break;
 	}
-	
+
 	return RGB(r*255, g*255, b*255);
 }
 
@@ -194,38 +194,38 @@ void dnd_tracker_t::callback(HWND h, UINT m, WPARAM w, LPARAM l)
 		case WM_DROPFILES:
 		{
 			HDROP const hDrop = (HDROP)w;
-			
+
 			POINT pt = {0,0};
 			DragQueryPoint(hDrop, &pt);
-			
+
 			UINT const file_count =
 				DragQueryFile(hDrop, (UINT)-1, NULL, 0);
-			
+
 			char name[MAX_PATH] = {0};
-			
+
 			names.clear();
-			
+
 			for(UINT i=0; i<file_count; ++i)
 			{
 				UINT const file_name_length =
 					DragQueryFile(hDrop, i, NULL, 0);
-					
+
 				UINT const chars_copied =
 					DragQueryFile(hDrop, i,
 						name, sizeof(name));
-						
+
 				/// this should never happen.
 				if(chars_copied != file_name_length)
 					throw error_t(err::OUT_OF_BUFFER);
-			
+
 				names.push_back(name);
 			}
-			
+
 			DragFinish(hDrop);
-			
+
 			NOTIFY_LISTENERS(listeners)->
 				on_drop(pt.x, pt.y, names);
-			
+
 			break;
 		}
 	}
@@ -266,13 +266,13 @@ grid_t::grid_t()
 void grid_t::setup(const rect_t& r, int cols, int rows, int gap)
 {
 	reset();
-	
+
 	cw = r.w / cols;
 	ch = r.h / rows;
-	
+
 	if(cw <= 0 || ch <= 0)
 		throw error_t(err::ARGS);
-	
+
 	bounds = r;
 	this->cols = cols;
 	this->rows = rows;
@@ -315,7 +315,7 @@ void mdc2_t::clear(color_t c)
 	temp_color_setter_t cs(handle);
 	cs.fb(false, true);
 	cs.bg(c.c);
-	
+
 	window_rect_t r(handle, true);
 	//~ FillRect(handle, &r.rect, (HBRUSH)(id+1));
 	Rectangle(handle, r.l, r.t, r.r, r.b);
@@ -351,10 +351,10 @@ mdc_t::mdc_t(HDC parent) :
 	parent(parent), handle(NULL), bmp(NULL)
 {
 	if(!parent) return;
-	
+
 	handle = CreateCompatibleDC(parent);
 	if(!handle) throw error_t(err::MDC);
-	
+
 	resize();
 }
 
@@ -381,7 +381,7 @@ void mdc_t::resize(int w, int h)
 {
 	if(!handle) return;
 	if(bmp) delete_bmp();
-	
+
 	bmp = CreateCompatibleBitmap(parent, w, h);
 	if(!bmp) throw error_t(err::MDC_BMP);
 
@@ -778,7 +778,7 @@ rect_t& rect_t::operator=(const rect_t& o)
 	bottom = o.b;
 	width = o.width;
 	height = o.height;
-	
+
 	return *this;
 }
 
@@ -820,7 +820,7 @@ temp_color_setter_t::temp_color_setter_t(HDC hdc) :
 {
 	old_brush = SelectObject(hdc,
 		(HBRUSH)GetStockObject(DC_BRUSH));
-	
+
 	old_pen = SelectObject(hdc,
 		(HPEN)GetStockObject(DC_PEN));
 }
@@ -828,7 +828,7 @@ temp_color_setter_t::temp_color_setter_t(HDC hdc) :
 temp_color_setter_t::~temp_color_setter_t()
 {
 	reset();
-	
+
 	if(null_pen) DeleteObject(null_pen);
 }
 
@@ -921,17 +921,17 @@ temp_object_t::~temp_object_t()
 int win::run(HWND hwnd, HACCEL haccel)
 {
 	MSG msg;
-	
+
 	while(1)
 	{
 		int res = GetMessage(&msg, NULL, 0, 0);
-		
+
 		if(0 == res)
 		{
 			// WM_QUIT
 			break;
 		}
-		
+
 		else if(res < 0)
 		{
 			// errors!
@@ -944,7 +944,7 @@ int win::run(HWND hwnd, HACCEL haccel)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	
+
 	return msg.wParam;
 }
 
@@ -967,14 +967,14 @@ void win::get_client_size(HWND h, SIZE& size)
 	size.cx = r.right - r.left;
 	size.cy = r.bottom - r.top;
 }
-	
+
 // #include "window_class_t.h"
 
 
 window_class_t::window_class_t(LPCSTR name, WNDPROC callback)
 {
 	init();
-	
+
 	lpszClassName = name;
 	lpfnWndProc = callback;
 }
@@ -987,17 +987,17 @@ void window_class_t::zeromemory()
 void window_class_t::init()
 {
 	cbSize = sizeof(WNDCLASSEX);
-	
+
 	cbClsExtra = 0;
 	cbWndExtra = 0;
-	
+
 	style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-	
+
 	hInstance = GetModuleHandle(NULL);
 	hIcon = hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	hCursor = LoadCursor(NULL, IDC_ARROW);
 	hbrBackground = (HBRUSH)COLOR_WINDOW;
-	
+
 	lpszMenuName = NULL;
 	lpszClassName = NULL;
 	lpfnWndProc = DefWindowProc;
@@ -1044,8 +1044,7 @@ window_maker_t::window_maker_t(char const * clsname, HINSTANCE hinstance) :
 HWND window_maker_t::create()
 {
 	handle = CreateWindowEx(
-		WS_EX_OVERLAPPEDWINDOW|WS_EX_ACCEPTFILES|
-			WS_EX_CONTEXTHELP|WS_EX_CONTROLPARENT,
+		WS_EX_OVERLAPPEDWINDOW|WS_EX_ACCEPTFILES|WS_EX_CONTROLPARENT,
 		clsname.c_str(),
 		"",
 		WS_OVERLAPPEDWINDOW|WS_CLIPCHILDREN,
@@ -1056,10 +1055,10 @@ HWND window_maker_t::create()
 		hinstance,
 		NULL
 	);
-	
+
 	if(!handle)
 		throw error_t(err::WINDOW_MAKER_CREATE);
-	
+
 	return handle;
 }
 
@@ -1077,10 +1076,10 @@ HWND window_maker_t::create(HWND parent, UINT id)
 		hinstance_t(parent).handle,
 		NULL
 	);
-	
+
 	if(!handle)
 		throw error_t(err::WINDOW_MAKER_CREATE);
-	
+
 	return handle;
 }
 
@@ -1098,7 +1097,7 @@ window_positioner_t::window_positioner_t(HWND handle) :
 void window_positioner_t::move(int dx, int dy) const
 {
 	window_rect_t r(handle);
-	
+
 	SetWindowPos(handle, NULL, r.left+dx, r.top+dy, 0, 0,
 		extra_flags|SWP_NOZORDER|SWP_NOSIZE);
 }
@@ -1149,10 +1148,10 @@ void window_positioner_t::center_to_screen() const
 {
 	window_rect_t c(handle);
 	window_rect_t p(GetParent(handle));
-	
+
 	const int dx = (p.width - c.width) >> 1;
 	const int dy = (p.height - c.height) >> 1;
-	
+
 	setpos(p.left + dx, p.top + dy);
 }
 
@@ -1184,10 +1183,10 @@ void window_rect_t::update(bool client)
 	{
 		BOOL(WINAPI *method_f)(HWND,LPRECT) =
 			client ? GetClientRect : GetWindowRect;
-		
+
 		method_f(parent, &rect);
 	}
-	
+
 	width = right - left;
 	height = bottom - top;
 }
