@@ -12,6 +12,7 @@ SYMBOLS := WIN32_LEAN_AND_MEAN STRICT
 WINLIBS := gdi32
 
 CXXFLAGS := --std=c++17 -Wall -Wextra -pedantic-errors
+CXXFLAGS += -Wno-unused-parameter
 CXXFLAGS += -fmax-errors=1
 CXXFLAGS += -fdiagnostics-color=always
 CXXFLAGS +=	$(addprefix -I,$(INCDIRS))
