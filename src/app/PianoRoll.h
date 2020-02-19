@@ -4,6 +4,7 @@
 struct PianoRoll
 {
 	SIZE cellSize { 32, 32 };
+	int keyOffset = 70;
 
 	void paint(HDC dc, RECT const & r);
 

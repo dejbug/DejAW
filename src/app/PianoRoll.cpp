@@ -84,8 +84,6 @@ void PianoRoll::paintNoteList(HDC dc, RECT const & r)
 	lib::win::setBrushColor(dc, RGB(255, 255, 255));
 	Rectangle(dc, left, r.top, right, r.bottom);
 
-	int const keyOffset = 70;
-
 	lib::win::setBrushColor(dc, RGB(128, 128, 128));
 	SetBkMode(dc, TRANSPARENT);
 	SelectObject(dc, GetStockObject(ANSI_FIXED_FONT));
@@ -114,7 +112,7 @@ void PianoRoll::paintNoteList(HDC dc, RECT const & r)
 			SetTextColor(dc, RGB(0,0,0));
 		}
 
-		TextOut(dc, right - 28, y + 8, keyNamePair.first, keyNamePair.second);
+		TextOut(dc, right - 42, y + 8, keyNamePair.first, keyNamePair.second);
 	}
 }
 

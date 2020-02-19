@@ -14,6 +14,8 @@ int WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
 		HACCEL haccel = LoadAccelerators(instance, "accel_main");
 
 		dejlib2::window_class_t wc("DejAW:MAINFRAME", MainFrameProc);
+		wc.hCursor = nullptr;
+
 		dejlib2::window_maker_t wm(wc);
 
 		wc.install();
@@ -29,7 +31,7 @@ int WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int)
 
 		return dejlib3::win::run(wm.handle, haccel);
 	}
-	
+
 	catch(dejlib2::error_t& e)
 	{
 		e.print();

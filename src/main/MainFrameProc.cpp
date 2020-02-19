@@ -10,28 +10,37 @@
 #include <main/resource.h>
 #include <app/PianoRoll.h>
 
-PianoRoll pianoRoll;
+#define HANDLE_WM_CAPTURECHANGED(hwnd,wParam,lParam,fn) ((fn)((hwnd),(HWND)(lParam)),(LRESULT)0)
 
-BOOL wm_create(HWND h, LPCREATESTRUCT cs)
+
+static PianoRoll pianoRoll;
+static bool dragging = false;
+
+
+static BOOL wm_create(HWND h, LPCREATESTRUCT cs)
 {
 	//~ DragAcceptFiles(h, TRUE);
 	//~ pianoRoll.cellSize = { 16, 16 };
 	return TRUE;
 }
 
-void wm_activate(HWND h, UINT f, HWND prev, BOOL minimized)
+
+static void wm_activate(HWND h, UINT f, HWND prev, BOOL minimized)
 {
 }
 
-void wm_timer(HWND h, UINT id)
+
+static void wm_timer(HWND h, UINT id)
 {
 }
 
-void wm_size(HWND h, UINT type, short cx, short cy)
+
+static void wm_size(HWND h, UINT type, short cx, short cy)
 {
 }
 
-void wm_paint(HWND h)
+
+static void wm_paint(HWND h)
 {
 	COLORREF const b = RGB(0x3f,0x3f,0x3f);
 	//~ COLORREF const f = RGB(0x83,0x8B,0x8B);
@@ -44,7 +53,8 @@ void wm_paint(HWND h)
 	pianoRoll.paint(dc.handle, r);
 }
 
-void wm_keydown(HWND h, UINT key, BOOL, int repeatCount, UINT flags)
+
+static void wm_keydown(HWND h, UINT key, BOOL, int repeatCount, UINT flags)
 {
 	switch(key)
 	{
@@ -55,7 +65,8 @@ void wm_keydown(HWND h, UINT key, BOOL, int repeatCount, UINT flags)
 	}
 }
 
-void wm_command(HWND h, int id, HWND ctrl, UINT code)
+
+static void wm_command(HWND h, int id, HWND ctrl, UINT code)
 {
 	if(1 == code) /// -- handle accelerators.
 		switch(id)
@@ -70,6 +81,67 @@ void wm_command(HWND h, int id, HWND ctrl, UINT code)
 				break;
 		}
 }
+
+
+struct Dc
+{
+	HDC const handle;
+
+	Dc(HWND h) : handle(GetDC(h)) { }
+	~Dc() { if (handle) ReleaseDC(WindowFromDC(handle), handle); }
+};
+
+
+static void wm_mousewheel(HWND h, int x, int y, int zDelta, UINT fwKeys)
+{
+	pianoRoll.keyOffset += zDelta > 0 ? -1 : 1;
+	// InvalidateRect(h, nullptr, TRUE);
+
+	RECT r;
+	GetClientRect(h, &r);
+
+	Dc dc(h);
+	pianoRoll.paintNoteList(dc.handle, r);
+}
+
+
+static void wm_mousemove(HWND h, int x, int y, UINT keyFlags)
+{
+	SetCursor(LoadCursor(nullptr, dragging ? IDC_HAND : IDC_ARROW));
+}
+
+
+static void wm_lbuttondown(HWND h, BOOL fDoubleClick, int x, int y, UINT keyFlags)
+{
+}
+
+
+static void wm_lbuttonup(HWND h, int x, int y, UINT keyFlags)
+{
+}
+
+
+static void wm_rbuttondown(HWND h, BOOL fDoubleClick, int x, int y, UINT keyFlags)
+{
+	SetCapture(h);
+	dragging = true;
+	SetCursor(LoadCursor(nullptr, dragging ? IDC_HAND : IDC_ARROW));
+}
+
+
+static void wm_rbuttonup(HWND h, int x, int y, UINT keyFlags)
+{
+	ReleaseCapture();
+	dragging = false;
+	SetCursor(LoadCursor(nullptr, dragging ? IDC_HAND : IDC_ARROW));
+}
+
+
+static void wm_capturechanged(HWND h, HWND hwndNewCapture)
+{
+	dragging = false;
+}
+
 
 LRESULT CALLBACK MainFrameProc(HWND h, UINT m, WPARAM wParam, LPARAM lParam)
 {
@@ -87,6 +159,14 @@ LRESULT CALLBACK MainFrameProc(HWND h, UINT m, WPARAM wParam, LPARAM lParam)
 			HANDLE_MSG(h, WM_ACTIVATE, wm_activate);
 			HANDLE_MSG(h, WM_SIZE, wm_size);
 			HANDLE_MSG(h, WM_CREATE, wm_create);
+
+			HANDLE_MSG(h, WM_MOUSEWHEEL, wm_mousewheel);
+			HANDLE_MSG(h, WM_MOUSEMOVE, wm_mousemove);
+			HANDLE_MSG(h, WM_LBUTTONDOWN, wm_lbuttondown);
+			HANDLE_MSG(h, WM_LBUTTONUP, wm_lbuttonup);
+			HANDLE_MSG(h, WM_RBUTTONDOWN, wm_rbuttondown);
+			HANDLE_MSG(h, WM_RBUTTONUP, wm_rbuttonup);
+			HANDLE_MSG(h, WM_CAPTURECHANGED, wm_capturechanged);
 
 			case WM_CLOSE: DestroyWindow(h); return 0;
 			case WM_DESTROY: PostQuitMessage(0); return 0;
