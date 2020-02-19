@@ -1,7 +1,7 @@
 include common.mk
 
 PRECISE := 1
-DEBUG := 1
+DEBUG := 0
 
 NAME := DejAW
 TARGET := console

@@ -1,9 +1,13 @@
 #include "PianoRoll.h"
+
 #include <cassert>
 #include <utility> // std::pair
+
 #include <lib/win.h>
-#include <lib/Grid.h>
 #include <pool/dejlib3/win.h>
+
+#include <lib/Grid.h>
+
 
 static std::pair<char, bool> getKeyChar(int i)
 {
@@ -59,6 +63,7 @@ static std::pair<char const *, size_t> getKeyName(int i)
 	return std::make_pair(keyBuffer, keyBufferIndex);
 }
 
+
 static void paintKeyList(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey)
 {
 	// using PianoRoll::cellSize.cy;
@@ -100,17 +105,37 @@ static void paintKeyList(HDC dc, RECT const & r, int keyListWidth, SIZE const & 
 	}
 }
 
-static void paintGrid(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey)
+static void paintGrid(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey, PianoGrid & pianoGrid)
 {
 	Grid grid;
 	grid.setCellSize(cellSize.cx, cellSize.cy);
 
-	RECT r2 { r.left + keyListWidth, r.top + 32, r.right, r.bottom };
+	RECT const r2 = {r.left + keyListWidth, r.top + 32, r.right, r.bottom};
 	grid.paint(dc, r2);
+
+	int const keysVisible = (r2.bottom - r2.top) / cellSize.cy + 1;
+
+	for (auto [col, keys] : pianoGrid.ticks)
+	{
+		for (int row = 0; row < keysVisible; ++row)
+		{
+			if (!keys[firstVisibleKey + row])
+				continue;
+
+			int const x = keyListWidth + col * cellSize.cx;
+			int const y = 32 + row * cellSize.cy;
+			int const p = 2;
+			RECT const r3 = {x+p, y+p, x+cellSize.cx-p+1, y+cellSize.cy-p+1};
+			auto const brush = reinterpret_cast<HBRUSH>(GetStockObject(DKGRAY_BRUSH));
+
+			FillRect(dc, &r3, brush);
+		}
+	}
 }
+
 
 void PianoRoll::paint(HDC dc, RECT const & r)
 {
 	paintKeyList(dc, r, keyListWidth, cellSize, firstVisibleKey);
-	paintGrid(dc, r, keyListWidth, cellSize, firstVisibleKey);
+	paintGrid(dc, r, keyListWidth, cellSize, firstVisibleKey, grid);
 }

@@ -96,13 +96,14 @@ struct Dc
 static void wm_mousewheel(HWND h, int x, int y, int zDelta, UINT fwKeys)
 {
 	pianoRoll.firstVisibleKey += zDelta > 0 ? -1 : 1;
-	// InvalidateRect(h, nullptr, TRUE);
+	InvalidateRect(h, nullptr, TRUE);
+	// UpdateWindow(h);
 
-	RECT r;
-	GetClientRect(h, &r);
+	// RECT r;
+	// GetClientRect(h, &r);
 
-	Dc dc(h);
-	pianoRoll.paint(dc.handle, r);
+	// Dc dc(h);
+	// pianoRoll.paint(dc.handle, r);
 }
 
 
