@@ -10,6 +10,7 @@
 #include <main/resource.h>
 #include <app/PianoRoll.h>
 
+
 #define HANDLE_WM_CAPTURECHANGED(hwnd,wParam,lParam,fn) ((fn)((hwnd),(HWND)(lParam)),(LRESULT)0)
 
 
@@ -94,14 +95,14 @@ struct Dc
 
 static void wm_mousewheel(HWND h, int x, int y, int zDelta, UINT fwKeys)
 {
-	pianoRoll.keyOffset += zDelta > 0 ? -1 : 1;
+	pianoRoll.firstVisibleKey += zDelta > 0 ? -1 : 1;
 	// InvalidateRect(h, nullptr, TRUE);
 
 	RECT r;
 	GetClientRect(h, &r);
 
 	Dc dc(h);
-	pianoRoll.paintNoteList(dc.handle, r);
+	pianoRoll.paint(dc.handle, r);
 }
 
 

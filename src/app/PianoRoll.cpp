@@ -5,20 +5,6 @@
 #include <lib/Grid.h>
 #include <pool/dejlib3/win.h>
 
-void PianoRoll::paint(HDC dc, RECT const & r)
-{
-	paintChannelList(dc, r);
-	paintNoteList(dc, r);
-	paintGrid(dc, r);
-}
-
-void PianoRoll::paintChannelList(HDC dc, RECT const & r)
-{
-	lib::win::setPenColor(dc, RGB(0, 0, 0));
-	lib::win::setBrushColor(dc, RGB(255, 255, 255));
-	Rectangle(dc, r.left, r.top, r.left + 200 + 1, r.bottom);
-}
-
 static std::pair<char, bool> getKeyChar(int i)
 {
 	if (i < 0 || i > 127) return std::make_pair(0, false);
@@ -73,29 +59,27 @@ static std::pair<char const *, size_t> getKeyName(int i)
 	return std::make_pair(keyBuffer, keyBufferIndex);
 }
 
-void PianoRoll::paintNoteList(HDC dc, RECT const & r)
+static void paintKeyList(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey)
 {
 	// using PianoRoll::cellSize.cy;
 
-	int const left = r.left + 200;
-	int const right = left + 100 + 1;
+	int const left = r.left;
+	int const right = left + keyListWidth + 1;
 
 	lib::win::setPenColor(dc, RGB(0, 0, 0));
 	lib::win::setBrushColor(dc, RGB(255, 255, 255));
-	Rectangle(dc, left, r.top, right, r.bottom);
+	Rectangle(dc, left, r.top + 32, right, r.bottom);
 
 	lib::win::setBrushColor(dc, RGB(128, 128, 128));
 	SetBkMode(dc, TRANSPARENT);
 	SelectObject(dc, GetStockObject(ANSI_FIXED_FONT));
 
-	for (int i=0, y=r.top; y<r.bottom; y += cellSize.cy, ++i)
+	for (int i=0, y=r.top + 32; y<r.bottom; y += cellSize.cy, ++i)
 	{
 		MoveToEx(dc, left, y, NULL);
 		LineTo(dc, right, y);
 
-		if (i == 0) continue;
-
-		int const reverseKeyIndex = 127 - (keyOffset + i);
+		int const reverseKeyIndex = 127 - (firstVisibleKey + i);
 		auto keyNamePair = getKeyName(reverseKeyIndex);
 
 		if (keyNamePair.first[1] == '#')
@@ -116,11 +100,17 @@ void PianoRoll::paintNoteList(HDC dc, RECT const & r)
 	}
 }
 
-void PianoRoll::paintGrid(HDC dc, RECT const & r)
+static void paintGrid(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey)
 {
 	Grid grid;
 	grid.setCellSize(cellSize.cx, cellSize.cy);
 
-	RECT r2 { r.left + 300, r.top + 32, r.right, r.bottom };
+	RECT r2 { r.left + keyListWidth, r.top + 32, r.right, r.bottom };
 	grid.paint(dc, r2);
+}
+
+void PianoRoll::paint(HDC dc, RECT const & r)
+{
+	paintKeyList(dc, r, keyListWidth, cellSize, firstVisibleKey);
+	paintGrid(dc, r, keyListWidth, cellSize, firstVisibleKey);
 }
