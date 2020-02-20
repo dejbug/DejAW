@@ -32,6 +32,7 @@ static std::pair<char, bool> getKeyChar(int i)
 	return std::make_pair(keyChars[i-1], true);
 }
 
+
 static std::pair<char const *, size_t> getKeyName(int i)
 {
 	if (i < 0 || i > 127) return std::make_pair("", 0);
@@ -105,13 +106,14 @@ static void paintKeyList(HDC dc, RECT const & r, int keyListWidth, SIZE const & 
 	}
 }
 
+
 static void paintGrid(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey, PianoGrid & pianoGrid)
 {
-	Grid grid;
-	grid.setCellSize(cellSize.cx, cellSize.cy);
+	// Grid grid;
+	// grid.setCellSize(cellSize.cx, cellSize.cy);
 
 	RECT const r2 = {r.left + keyListWidth, r.top + 32, r.right, r.bottom};
-	grid.paint(dc, r2);
+	// grid.paint(dc, r2);
 
 	int const keysVisible = (r2.bottom - r2.top) / cellSize.cy + 1;
 

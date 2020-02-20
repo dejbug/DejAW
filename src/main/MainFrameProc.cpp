@@ -15,6 +15,7 @@
 
 
 static PianoRoll pianoRoll;
+static PianoGridBackground pianoRollBackground;
 static bool dragging = false;
 
 
@@ -38,6 +39,9 @@ static void wm_timer(HWND h, UINT id)
 
 static void wm_size(HWND h, UINT type, short cx, short cy)
 {
+	HDC dc = GetDC(h);
+	pianoRollBackground.create(dc, {0, 0, cx, cy}, pianoRoll.cellSize);
+	ReleaseDC(h, dc);
 }
 
 
@@ -50,8 +54,17 @@ static void wm_paint(HWND h)
 	RECT r;
 	GetClientRect(h, &r);
 
-	dejlib3::win::PaintDc dc(h, b, b);
-	pianoRoll.paint(dc.handle, r);
+	// dejlib3::win::PaintDc dc(h, b, b);
+
+	PAINTSTRUCT ps;
+	BeginPaint(h, &ps);
+
+	// BitBlt(ps.hdc, r.left, r.top, r.right, r.bottom, nullptr, 0, 0, WHITENESS);
+
+	pianoRollBackground.paint(ps.hdc, {pianoRoll.keyListWidth, pianoRoll.cellSize.cy, r.right-pianoRoll.keyListWidth, r.bottom-pianoRoll.cellSize.cy});
+	pianoRoll.paint(ps.hdc, r);
+
+	EndPaint(h, &ps);
 }
 
 
@@ -153,7 +166,8 @@ LRESULT CALLBACK MainFrameProc(HWND h, UINT m, WPARAM wParam, LPARAM lParam)
 		{
 			default: break;
 
-			// case WM_ERASEBKGND: return 0;
+			case WM_ERASEBKGND: return 0;
+
 			HANDLE_MSG(h, WM_PAINT, wm_paint);
 			HANDLE_MSG(h, WM_TIMER, wm_timer);
 			HANDLE_MSG(h, WM_KEYDOWN, wm_keydown);
