@@ -1,4 +1,4 @@
-version: "0.0.{build}"
+version: "{build}"
 
 skip_tags: true
 test: off
@@ -6,12 +6,12 @@ max_jobs: 1
 
 install:
   - cmd: SET MINGW_ZIP=i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
-  - cmd: SET PATH=%APPVEYOR_BUILD_FOLDER%\mingw32\bin;%PATH%
   - cmd: IF NOT EXIST "%MINGW_ZIP%" curl -kLO "https://downloads.sourceforge.net/project/mingw-w64/Toolchains%%20targetting%%20Win32/Personal%%20Builds/mingw-builds/8.1.0/threads-posix/dwarf/%MINGW_ZIP%"
   - cmd: 7z x "%MINGW_ZIP%"
+  - cmd: SET PATH=%APPVEYOR_BUILD_FOLDER%\mingw32\bin;%PATH%
 
 cache:
-  - %MINGW_ZIP%
+  - i686-8.1.0-release-posix-dwarf-rt_v6-rev0.7z
 
 before_build:
   - cmd: mingw32-make --version | head -1
