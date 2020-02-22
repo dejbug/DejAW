@@ -1,59 +1,26 @@
-define COMPILE
-$(CXX) -o $1 -c $(filter %.cpp %.c %.cxx,$2) $(CXXFLAGS)
-endef
+W = $(subst /,\,$1)
 
-define COPY_FILE
-$(shell python -c "import shutil; shutil.copy('$1','$2')")
-endef
+DISTINCT = $(sort $1)
 
-define DISTINCT
-$(sort $1)
-endef
+HAS_GOAL = $(findstring $1,$(MAKECMDGOALS))
+HAS_GOALS = $(or $(foreach goal,$1,$(findstring $(goal),$(MAKECMDGOALS))))
 
-define GEN_PREREQ
-$(CXX) -MF $1 -MM $2 -MT "$(subst .d,.o,$1) $1" $(CXXFLAGS)
-endef
+LINK_F = $(filter %.o %.a %.dll,$1)
+LINK = $(CXX) -o $1 $(call LINK_F,$2) $(CXXFLAGS) $(LDFLAGS) $(LDLIBS)
 
-define HAS_GOAL
-$(findstring $1,$(MAKECMDGOALS))
-endef
+COMPILE_F = $(filter %.cpp %.c %.cxx,$1)
+COMPILE = $(CXX) -o $1 -c  $(call COMPILE_F,$2) $(CXXFLAGS)
 
-define HAS_NON_BUILD_GOAL
-$(or $(call HAS_GOAL,clean),$(call HAS_GOAL,reset))
-endef
+GENREQS = $(CXX) -MF $1 -MM -MG $2 -MT "$1 $(1:.d=.o)" $(CXXFLAGS)
 
-define LINK
-$(CXX) -o $1 $(filter %.o %.a %.dll,$2) $(CXXFLAGS) $(LDFLAGS) $(LDLIBS)
-endef
+HAS_NON_BUILD_GOAL = $(call HAS_GOALS,clean reset)
 
-define LIST_DIR
-$(call TO_LIN_PATH,$(shell python -c "import os,itertools,urllib; it = os.walk('$1'); it = (tuple(os.path.join(t,n) for n in nn) for t,dd,nn in it); it = itertools.chain(*it); print ' '.join(it)"))
-endef
+MAKETREE_ = IF NOT EXIST $1 MKDIR $1
+MAKETREE = $(call MAKETREE_,$(call W,$1))
 
-define MAKE_DIR
-$(shell python -c "import os.path; os.path.exists('$1') or os.makedirs('$1')")
-endef
+DELTREE_ = IF EXIST $1 RMDIR /S /Q $1
+DELTREE = $(call DELTREE_,$(call W,$1))
 
-define REMOVE_TREE
-$(shell python -c "import shutil; shutil.rmtree('$1', True)")
-endef
+COPY = COPY /Y $(call W,$1 $2) 1>NUL
 
-define STRIP_PATH
-$(call TO_LIN_PATH,$(shell python -c "print '$1'.strip(r' \/')"))
-endef
-
-define TO_ABS_PATH
-$(call TO_LIN_PATH,$(shell python -c "import os.path; print os.path.abspath('$1')"))
-endef
-
-define TO_LIN_PATH
-$(subst \,/,$1)
-endef
-
-define TO_WIN_PATH
-$(subst /,\,$1)
-endef
-
-define QUOTE
-$(addsuffix ",$(addprefix ",$1))
-endef
+MINIMIZE = strip $1 && upx -9 $1
