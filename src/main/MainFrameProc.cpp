@@ -1,17 +1,21 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <shellapi.h>
+
 #include <stdio.h>
 
-#include <pool/dejlib2/error_t.h>
-#include <pool/dejlib2/win.h>
-#include <pool/dejlib3/win.h>
+#include <stdexcept>
+
+#include <lib/win.h>
+#include <lib/Handle.hpp>
+#include <lib/windowsx.hpp>
+
+#include <app/PianoRoll.h>
+#include <app/PianoGridBackground.h>
 
 #include <main/resource.h>
-#include <app/PianoRoll.h>
 
-
-#define HANDLE_WM_CAPTURECHANGED(hwnd,wParam,lParam,fn) ((fn)((hwnd),(HWND)(lParam)),(LRESULT)0)
+// #include <pool/dejlib3/win.h>
 
 
 static PianoRoll pianoRoll;
@@ -39,17 +43,15 @@ static void wm_timer(HWND h, UINT id)
 
 static void wm_size(HWND h, UINT type, short cx, short cy)
 {
-	HDC dc = GetDC(h);
-	pianoRollBackground.create(dc, {0, 0, cx, cy}, pianoRoll.cellSize);
-	ReleaseDC(h, dc);
+	pianoRollBackground.create(Handle<HDC>::GetDC(h), {0, 0, cx, cy}, pianoRoll.cellSize);
 }
 
 
 static void wm_paint(HWND h)
 {
-	COLORREF const b = RGB(0x3f,0x3f,0x3f);
-	//~ COLORREF const f = RGB(0x83,0x8B,0x8B);
-	//~ COLORREF const t = RGB(0x3f,0x3f,0xaf);
+	// COLORREF const b = RGB(0x3f,0x3f,0x3f);
+	// COLORREF const f = RGB(0x83,0x8B,0x8B);
+	// COLORREF const t = RGB(0x3f,0x3f,0xaf);
 
 	RECT r;
 	GetClientRect(h, &r);
@@ -59,7 +61,7 @@ static void wm_paint(HWND h)
 	PAINTSTRUCT ps;
 	BeginPaint(h, &ps);
 
-	// BitBlt(ps.hdc, r.left, r.top, r.right, r.bottom, nullptr, 0, 0, WHITENESS);
+	BitBlt(ps.hdc, r.left, r.top, r.right, pianoRoll.cellSize.cy, nullptr, 0, 0, WHITENESS);
 
 	pianoRollBackground.paint(ps.hdc, {pianoRoll.keyListWidth, pianoRoll.cellSize.cy, r.right-pianoRoll.keyListWidth, r.bottom-pianoRoll.cellSize.cy});
 	pianoRoll.paint(ps.hdc, r);
@@ -88,22 +90,13 @@ static void wm_command(HWND h, int id, HWND ctrl, UINT code)
 			default: break;
 
 			case IDM_ESCAPE:
-				dejlib2::win::close_window(h);
+				lib::win::closeWindow(h);
 				break;
 
 			case IDM_F8:
 				break;
 		}
 }
-
-
-struct Dc
-{
-	HDC const handle;
-
-	Dc(HWND h) : handle(GetDC(h)) { }
-	~Dc() { if (handle) ReleaseDC(WindowFromDC(handle), handle); }
-};
 
 
 static void wm_mousewheel(HWND h, int x, int y, int zDelta, UINT fwKeys)
@@ -158,6 +151,12 @@ static void wm_capturechanged(HWND h, HWND hwndNewCapture)
 }
 
 
+static void wm_appcommand(HWND h, short cmd, WORD dev, WORD key)
+{
+	printf("WM_APPCOMMAND cmd(%d) dev(%d) key(%d)\n", cmd, dev, key);
+}
+
+
 LRESULT CALLBACK MainFrameProc(HWND h, UINT m, WPARAM wParam, LPARAM lParam)
 {
 	try
@@ -172,9 +171,6 @@ LRESULT CALLBACK MainFrameProc(HWND h, UINT m, WPARAM wParam, LPARAM lParam)
 			HANDLE_MSG(h, WM_TIMER, wm_timer);
 			HANDLE_MSG(h, WM_KEYDOWN, wm_keydown);
 			HANDLE_MSG(h, WM_COMMAND, wm_command);
-			HANDLE_MSG(h, WM_ACTIVATE, wm_activate);
-			HANDLE_MSG(h, WM_SIZE, wm_size);
-			HANDLE_MSG(h, WM_CREATE, wm_create);
 
 			HANDLE_MSG(h, WM_MOUSEWHEEL, wm_mousewheel);
 			HANDLE_MSG(h, WM_MOUSEMOVE, wm_mousemove);
@@ -183,24 +179,20 @@ LRESULT CALLBACK MainFrameProc(HWND h, UINT m, WPARAM wParam, LPARAM lParam)
 			HANDLE_MSG(h, WM_RBUTTONDOWN, wm_rbuttondown);
 			HANDLE_MSG(h, WM_RBUTTONUP, wm_rbuttonup);
 			HANDLE_MSG(h, WM_CAPTURECHANGED, wm_capturechanged);
+			HANDLE_MSG(h, WM_APPCOMMAND, wm_appcommand);
+
+			HANDLE_MSG(h, WM_SIZE, wm_size);
+			HANDLE_MSG(h, WM_ACTIVATE, wm_activate);
+			HANDLE_MSG(h, WM_CREATE, wm_create);
 
 			case WM_CLOSE: DestroyWindow(h); return 0;
 			case WM_DESTROY: PostQuitMessage(0); return 0;
-
-			case WM_APPCOMMAND:
-			{
-				auto const cmd = GET_APPCOMMAND_LPARAM(lParam);
-				auto const dev = GET_DEVICE_LPARAM(lParam);
-				auto const key = GET_KEYSTATE_LPARAM(lParam);
-				printf("WM_APPCOMMAND cmd(%d) dev(%d) key(%d)\n", cmd, dev, key);
-				return 0;
-			}
 		}
 	}
 
-	catch(dejlib2::error_t & e)
+	catch(std::runtime_error & e)
 	{
-		e.print();
+		fprintf(stderr, "! %s\n", e.what());
 	}
 
 	return DefWindowProc(h, m, wParam, lParam);
