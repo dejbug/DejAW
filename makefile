@@ -1,5 +1,7 @@
 include common.mk
 
+SHELL := CMD.EXE
+
 PRECISE := 1
 DEBUG := 0
 
