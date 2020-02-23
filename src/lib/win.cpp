@@ -1,4 +1,5 @@
 #include "win.h"
+#include "Rect.h"
 
 
 void lib::win::init(WNDCLASSEX & wc, LPCSTR name, WNDPROC callback) noexcept
@@ -93,38 +94,24 @@ void lib::win::center(HWND hwnd) noexcept
 	move(hwnd, p.left + dx, p.top + dy);
 }
 
-COLORREF lib::win::setPenColor(HDC dc, COLORREF color) noexcept
+HGDIOBJ lib::win::selectStockObject(HDC dc, int id) noexcept
 {
-	SelectObject(dc, GetStockObject(DC_PEN));
-	return SetDCPenColor(dc, color);
+	return SelectObject(dc, GetStockObject(id));
 }
 
-COLORREF lib::win::setBrushColor(HDC dc, COLORREF color) noexcept
-{
-	SelectObject(dc, GetStockObject(DC_BRUSH));
-	return SetDCBrushColor(dc, color);
-}
+// COLORREF lib::win::setPenColor(HDC dc, COLORREF color) noexcept
+// {
+	// SelectObject(dc, GetStockObject(DC_PEN));
+	// return SetDCPenColor(dc, color);
+// }
 
-lib::win::WindowRect::WindowRect(HWND hwnd) noexcept
-{
-	if (hwnd)
-		GetWindowRect(hwnd, this);
-	else
-	{
-		left = top = 0;
-		right = GetSystemMetrics(SM_CXSCREEN);
-		bottom = GetSystemMetrics(SM_CYSCREEN);
-	}
-}
+// COLORREF lib::win::setBrushColor(HDC dc, COLORREF color) noexcept
+// {
+	// SelectObject(dc, GetStockObject(DC_BRUSH));
+	// return SetDCBrushColor(dc, color);
+// }
 
-lib::win::ClientRect::ClientRect(HWND hwnd) noexcept
+void lib::win::whiteness(HDC dc, int x, int y, int w, int h, bool invert) noexcept
 {
-	if (hwnd)
-		GetClientRect(hwnd, this);
-	else
-	{
-		left = top = 0;
-		right = GetSystemMetrics(SM_CXSCREEN);
-		bottom = GetSystemMetrics(SM_CYSCREEN);
-	}
+	BitBlt(dc, x, y, w, h, nullptr, 0, 0, invert ? BLACKNESS : WHITENESS);
 }

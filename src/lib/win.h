@@ -20,30 +20,13 @@ void resize(HWND hwnd, int w, int h) noexcept;
 
 void center(HWND hwnd) noexcept;
 
-COLORREF setPenColor(HDC dc, COLORREF color) noexcept;
+HGDIOBJ selectStockObject(HDC dc, int id) noexcept;
 
-COLORREF setBrushColor(HDC dc, COLORREF color) noexcept;
+// COLORREF setPenColor(HDC dc, COLORREF color) noexcept;
 
-struct Rect : RECT
-{
-	auto pos() const noexcept { return POINT{left, top}; }
+// COLORREF setBrushColor(HDC dc, COLORREF color) noexcept;
 
-	auto size() const noexcept { return SIZE{right-left, bottom-top}; }
-
-	auto width() const noexcept { return right-left; }
-
-	auto height() const noexcept { return bottom-top; }
-};
-
-struct WindowRect : Rect
-{
-	WindowRect(HWND hwnd) noexcept;
-};
-
-struct ClientRect : Rect
-{
-	ClientRect(HWND hwnd) noexcept;
-};
+void whiteness(HDC dc, int x, int y, int w, int h, bool invert=false) noexcept;
 
 } // !namespace win
 } // !namespace lib

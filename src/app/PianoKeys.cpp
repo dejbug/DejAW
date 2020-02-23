@@ -62,43 +62,51 @@ static std::pair<char const *, size_t> getKeyName(int i)
 }
 
 
-void PianoKeys::paint(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey)
+void PianoKeys::paint(HDC dc, RECT const & r, SIZE const & cellSize, int firstVisibleKey)
 {
-	int const headerHeight = cellSize.cy;
 	int const textPaddingRight = 42;
 	int const textPaddingTop = 8;
 
-	int const left = r.left;
-	int const right = left + keyListWidth + 1;
+	int const right = r.right + 1;
 
-	lib::win::setPenColor(dc, RGB(0, 0, 0));
-	lib::win::setBrushColor(dc, RGB(255, 255, 255));
-	Rectangle(dc, left, r.top + headerHeight, right, r.bottom);
+	lib::win::selectStockObject(dc, DC_PEN);
+	lib::win::selectStockObject(dc, DC_BRUSH);
 
-	lib::win::setBrushColor(dc, RGB(128, 128, 128));
-	SetBkMode(dc, TRANSPARENT);
 	SelectObject(dc, GetStockObject(ANSI_FIXED_FONT));
+	SetBkMode(dc, TRANSPARENT);
 
-	for (int i=0, y=r.top + headerHeight; y<r.bottom; y += cellSize.cy, ++i)
+	COLORREF const backgroundColor1 = RGB(255, 255, 255);
+	COLORREF const backgroundColor2 = RGB(128, 128, 128);
+	COLORREF const textColor1 = RGB(0, 0, 0);
+	COLORREF const textColor2 = RGB(255, 255, 255);
+	COLORREF const borderColor = RGB(0, 0, 0);
+
+	SetDCPenColor(dc, borderColor);
+	SetDCBrushColor(dc, backgroundColor1);
+
+	Rectangle(dc, r.left, r.top, right, r.bottom);
+
+	for (int i=0, y=r.top; y<r.bottom; y += cellSize.cy, ++i)
 	{
-		MoveToEx(dc, left, y, NULL);
+		MoveToEx(dc, r.left, y, NULL);
 		LineTo(dc, right, y);
 
 		int const reverseKeyIndex = 127 - (firstVisibleKey + i);
-		auto keyNamePair = getKeyName(reverseKeyIndex);
+		auto const keyNamePair = getKeyName(reverseKeyIndex);
 
 		if (keyNamePair.first[1] == '#')
 		{
-			SetTextColor(dc, RGB(255,255,255));
+			SetTextColor(dc, textColor2);
+			SetDCBrushColor(dc, backgroundColor2);
 
-			SelectObject(dc, GetStockObject(NULL_PEN));
-			Rectangle(dc, left + 1, y + 1, right, y + cellSize.cy + 1);
-			lib::win::setPenColor(dc, RGB(0, 0, 0));
+			lib::win::selectStockObject(dc, NULL_PEN);
+			Rectangle(dc, r.left + 1, y + 1, right, y + cellSize.cy + 1);
+			lib::win::selectStockObject(dc, DC_PEN);
 		}
 		else
 		{
-			SetDCPenColor(dc, RGB(0, 0, 0));
-			SetTextColor(dc, RGB(0,0,0));
+			SetTextColor(dc, textColor1);
+			SetDCBrushColor(dc, backgroundColor1);
 		}
 
 		TextOut(dc, right - textPaddingRight, y + textPaddingTop, keyNamePair.first, keyNamePair.second);

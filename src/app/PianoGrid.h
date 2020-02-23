@@ -18,5 +18,5 @@ struct PianoGrid
 		ticks[9][74] = 1;
 	}
 
-	void paint(HDC dc, RECT const & r, int keyListWidth, SIZE const & cellSize, int firstVisibleKey);
+	void paint(HDC dc, RECT const & r, SIZE const & cellSize, int firstVisibleKey);
 };

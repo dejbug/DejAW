@@ -11,22 +11,18 @@
 #include <lib/windowsx.hpp>
 
 #include <app/PianoRoll.h>
-#include <app/PianoGridBackground.h>
 
 #include <main/resource.h>
 
-// #include <pool/dejlib3/win.h>
-
 
 static PianoRoll pianoRoll;
-static PianoGridBackground pianoRollBackground;
 static bool dragging = false;
 
 
 static BOOL wm_create(HWND h, LPCREATESTRUCT cs)
 {
-	//~ DragAcceptFiles(h, TRUE);
-	//~ pianoRoll.cellSize = { 16, 16 };
+	// DragAcceptFiles(h, TRUE);
+	// pianoRoll.cellSize = { 16, 16 };
 	return TRUE;
 }
 
@@ -43,27 +39,19 @@ static void wm_timer(HWND h, UINT id)
 
 static void wm_size(HWND h, UINT type, short cx, short cy)
 {
-	pianoRollBackground.create(Handle<HDC>::GetDC(h), {0, 0, cx, cy}, pianoRoll.cellSize);
+	pianoRoll.resize(Handle<HDC>::GetDC(h), {0, 0, cx, cy});
 }
 
 
 static void wm_paint(HWND h)
 {
-	// COLORREF const b = RGB(0x3f,0x3f,0x3f);
-	// COLORREF const f = RGB(0x83,0x8B,0x8B);
-	// COLORREF const t = RGB(0x3f,0x3f,0xaf);
-
 	RECT r;
 	GetClientRect(h, &r);
-
-	// dejlib3::win::PaintDc dc(h, b, b);
 
 	PAINTSTRUCT ps;
 	BeginPaint(h, &ps);
 
-	BitBlt(ps.hdc, r.left, r.top, r.right, pianoRoll.cellSize.cy, nullptr, 0, 0, WHITENESS);
-
-	pianoRollBackground.paint(ps.hdc, {pianoRoll.keyListWidth, pianoRoll.cellSize.cy, r.right-pianoRoll.keyListWidth, r.bottom-pianoRoll.cellSize.cy});
+	lib::win::whiteness(ps.hdc, r.left, r.top, r.right, pianoRoll.headerHeight);
 	pianoRoll.paint(ps.hdc, r);
 
 	EndPaint(h, &ps);
@@ -82,20 +70,26 @@ static void wm_keydown(HWND h, UINT key, BOOL, int repeatCount, UINT flags)
 }
 
 
+static void handle_accelerators(HWND h, int id)
+{
+	switch(id)
+	{
+		default: break;
+
+		case IDM_ESCAPE:
+			lib::win::closeWindow(h);
+			break;
+
+		case IDM_F8:
+			break;
+	}
+}
+
+
 static void wm_command(HWND h, int id, HWND ctrl, UINT code)
 {
-	if(1 == code) /// -- handle accelerators.
-		switch(id)
-		{
-			default: break;
-
-			case IDM_ESCAPE:
-				lib::win::closeWindow(h);
-				break;
-
-			case IDM_F8:
-				break;
-		}
+	if(1 == code)
+		handle_accelerators(h, id);
 }
 
 
@@ -103,13 +97,6 @@ static void wm_mousewheel(HWND h, int x, int y, int zDelta, UINT fwKeys)
 {
 	pianoRoll.firstVisibleKey += zDelta > 0 ? -1 : 1;
 	InvalidateRect(h, nullptr, TRUE);
-	// UpdateWindow(h);
-
-	// RECT r;
-	// GetClientRect(h, &r);
-
-	// Dc dc(h);
-	// pianoRoll.paint(dc.handle, r);
 }
 
 

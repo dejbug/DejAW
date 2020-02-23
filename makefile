@@ -62,7 +62,7 @@ reset : | clean ; $(call DELTREE,deploy)
 run : build/$(NAME).exe ; $(call W,@.\$<)
 
 ifneq ($(PRECISE),0)
-ifeq (,$(call HAS_NON_BUILD_GOAL))
+ifeq (,$(call HAS_GOALS,clean reset))
 include $(PREREQS)
 endif
 endif
